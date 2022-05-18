@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "223724010218",
+    "project_id": "sleepy-22538",
+    "storage_bucket": "sleepy-22538.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:223724010218:android:dbc6f13a404eeddb25f593",
+        "android_client_info": {
+          "package_name": "com.example.sleepy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "223724010218-10qquib7dpsp563dia2p2qph9dv3kbud.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sleepy",
+            "certificate_hash": "71f02b1d9b34a581b870a7ea7c9ad0112c07a1f1"
+          }
+        },
+        {
+          "client_id": "223724010218-poieo7o7l9dbl9nbvpeqgvpt9786q4e4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sleepy",
+            "certificate_hash": "2088ec333dd540ca7f93bd5aaa164b03dcc69e43"
+          }
+        },
+        {
+          "client_id": "223724010218-u8d9eqjtsf943m743l43e0fedhglqmuh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sleepy",
+            "certificate_hash": "73c00737a878447445bad60308a64627db67e075"
+          }
+        },
+        {
+          "client_id": "223724010218-uvg5qr7lsmiork63bd1iitqe026jqsq1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5RcOEhuxq7pO1U-vDCuQWSypvHh2iOhQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "223724010218-uvg5qr7lsmiork63bd1iitqe026jqsq1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
