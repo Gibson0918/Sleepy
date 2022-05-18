@@ -59,8 +59,31 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
-    
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
+        if (requestCode == RC_SIGN_IN) {
+            // The Task returned from this call is always completed, no need to attach
+            // a listener.
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                task.getResult(ApiException.class);
+                MainActivity();
+            } catch (ApiException e) {
+                e.printStackTrace();
+                Log.w("signInError", e.toString());
+                Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void MainActivity() {
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        startActivity(intent);
+    }
     /*private void updateUI(GoogleSignInAccount user) {
         if(user !=  null){
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
