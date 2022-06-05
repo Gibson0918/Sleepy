@@ -35,7 +35,7 @@
 
 
             <TimePicker
-                android:id="@+id/fragment_createalarm_timePicker"
+                android:id="@+id/createalarm_timePicker"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:timePickerMode="spinner" />
@@ -63,49 +63,50 @@
                     android:layout_weight="1" />
 
                 <Button
-                    android:id="@+id/button12"
+                    android:id="@+id/btn_sun"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="S" />
+                    android:text="S"
+                    android:background="@drawable/bg_button"/>
 
                 <Button
-                    android:id="@+id/button11"
+                    android:id="@+id/btn_mon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="M" />
 
                 <Button
-                    android:id="@+id/button10"
+                    android:id="@+id/btn_tue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="T" />
 
                 <Button
-                    android:id="@+id/button9"
+                    android:id="@+id/btn_wed"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="W" />
 
                 <Button
-                    android:id="@+id/button8"
+                    android:id="@+id/btn_thur"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="T" />
 
                 <Button
-                    android:id="@+id/button7"
+                    android:id="@+id/btn_fri"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="F" />
 
                 <Button
-                    android:id="@+id/button6"
+                    android:id="@+id/btn_sat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -146,9 +147,10 @@
                 android:textAlignment="center" />
 
             <Spinner
-                android:id="@+id/spinnerMath"
+                android:id="@+id/spinnerProblem"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:spinnerMode="dropdown" />
 
 
             <Space
@@ -200,7 +202,7 @@
                     android:layout_weight="1" />
 
                 <Button
-                    android:id="@+id/buttonn"
+                    android:id="@+id/btn_snooze"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -212,11 +214,11 @@
                     android:layout_weight="1" />
 
                 <Button
-                    android:id="@+id/button2n"
+                    android:id="@+id/btn_repeat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Repeat" />
+                    android:text="Repeat"/>
 
                 <Space
                     android:layout_width="wrap_content"
@@ -236,7 +238,7 @@
                     android:layout_weight="1" />
 
                 <Button
-                    android:id="@+id/btncancel"
+                    android:id="@+id/btn_cancel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -248,7 +250,7 @@
                     android:layout_weight="1" />
 
                  <Button
-                    android:id="@+id/btnsave"
+                    android:id="@+id/btn_save"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
