@@ -10,10 +10,13 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Toast;
 
 import com.example.sleepy.databinding.ActivityMainBinding;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener{
 
@@ -22,15 +25,26 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     HistoryFragment historyFragment = new HistoryFragment();
     SettingsFragment settingsFragment = new SettingsFragment();
 
+    FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         bottomNavigationView = findViewById(R.id.bottomnav);
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
         bottomNavigationView.setSelectedItemId(R.id.alarmtab);
     }
 
+    private String getUserName() {
+        FirebaseUser user = mFirebaseAuth.getCurrentUser();
+        if(user != null) {
+        return  user.getUid();
+        }
+        return "ANONYMOUS" ;
+    }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
