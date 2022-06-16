@@ -22,6 +22,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.HashMap;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -59,13 +66,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-    private String getUserName() {
-        FirebaseUser user = mFirebaseAuth.getCurrentUser();
-        if(user != null) {
-            return  user.getDisplayName();
-        }
-        return "ANONYMOUS" ;
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -93,11 +93,14 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    //
+
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mFirebaseAuth.signInWithCredential(credential)
                 .addOnSuccessListener(this, authResult -> {
+
+                    FirebaseFirestore db = FirebaseFirestore.getInstance();
+                    db.collection(getusermail()).document("Alarms");
                     startActivity(new Intent(LoginActivity.this, MainActivity.class));
                     finish();
                 })
@@ -105,5 +108,12 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show());
     }
 
-    //
+
+    private String getusermail() {
+        FirebaseUser user = mFirebaseAuth.getCurrentUser();
+        if(user != null) {
+            return  user.getEmail();
+        }
+        return "ANONYMOUS" ;
+    }
 }

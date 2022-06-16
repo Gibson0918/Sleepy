@@ -16,6 +16,7 @@ import android.widget.Spinner;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -23,8 +24,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class AddAlarm extends AppCompatActivity implements View.OnClickListener {
 
@@ -47,23 +51,6 @@ public class AddAlarm extends AppCompatActivity implements View.OnClickListener 
         ArrayAdapter ad = new ArrayAdapter(this,android.R.layout.simple_spinner_dropdown_item,spinnerobjects);
         //ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerpuzzle.setAdapter(ad);
-
-        //DatabaseReference myRef = FirebaseDatabase.getInstance().getReference().child("PuzzleType");
-       // DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("PuzzleType");
-       /* myRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                listpuzzle.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    listpuzzle.add(snapshot.getValue().toString());
-                    ad.notifyDataSetChanged();
-                }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-            }
-        });
-*/
 
 
         //buttoncolours();
@@ -108,12 +95,15 @@ public class AddAlarm extends AppCompatActivity implements View.OnClickListener 
                 txt_alarmname = findViewById(R.id.txt_alarmname);
                 alarm_add data = new alarm_add(alarmTime,uid,days,PuzzleType,txt_alarmname.getText().toString(),1);
 
-                DatabaseReference insert = FirebaseDatabase.getInstance().getReference("Alarms");
-                //insert.setValue(data);
-                insert.push().setValue(data);
-                Toast.makeText(getApplicationContext(), "Alarm Created", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(AddAlarm.this,MainActivity.class);
-                startActivity(intent);
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                db.collection(getusermail()).document("Alarm").collection("alarms").add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Intent intent = new Intent(AddAlarm.this,MainActivity.class);
+                        startActivity(intent);
+                        Toast.makeText(getApplicationContext(), "Alarm Created", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
 
@@ -128,6 +118,12 @@ public class AddAlarm extends AppCompatActivity implements View.OnClickListener 
 
     }
 
+    private String getusermail() {
+        if(user != null) {
+            return  user.getEmail();
+        }
+        return "ANONYMOUS" ;
+    }
 
 
     public String convertTime(int number) {
@@ -144,96 +140,7 @@ public class AddAlarm extends AppCompatActivity implements View.OnClickListener 
     }
 
 
-    /*
 
-    private void buttoncolours() {
-
-
-        final Button btn_sun = findViewById(R.id.btn_sun);
-        btn_sun.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ColorDrawable buttonColor = (ColorDrawable) btn_sun.getBackground();
-                int colorId = buttonColor.getColor();
-                if (colorId != Color.BLUE) {
-                    btn_sun.setBackgroundColor(Color.BLUE);
-                } else {
-                //    btn_sun.getBackground().clearColorFilter();
-                    //https://www.youtube.com/watch?v=xWWnrh_Gks0
-                }
-            }
-        });
-
-
-        final Button btn_mon = findViewById(R.id.btn_mon);
-        btn_mon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btn_mon.setBackgroundColor(Color.BLUE);
-            }
-        });
-
-        final Button btn_tue = findViewById(R.id.btn_tue);
-        btn_tue.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btn_tue.setBackgroundColor(Color.BLUE);
-            }
-        });
-
-        final Button btn_wed = findViewById(R.id.btn_wed);
-        btn_wed.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btn_wed.setBackgroundColor(Color.BLUE);
-            }
-        });
-
-        final Button btn_thur = findViewById(R.id.btn_thur);
-        btn_thur.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btn_thur.setBackgroundColor(Color.BLUE);
-            }
-        });
-
-        final Button btn_fri = findViewById(R.id.btn_fri);
-        btn_fri.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btn_fri.setBackgroundColor(Color.BLUE);
-            }
-        });
-
-
-        final Button btn_sat = findViewById(R.id.btn_sat);
-        btn_sat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btn_sat.setBackgroundColor(Color.BLUE);
-            }
-        });
-
-
-        final Button btn_snooze = findViewById(R.id.btn_snooze);
-        btn_snooze.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btn_snooze.setBackgroundColor(Color.BLUE);
-            }
-        });
-
-        final Button btn_repeat = findViewById(R.id.btn_repeat);
-        btn_repeat.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                btn_repeat.setBackgroundColor(Color.BLUE);
-            }
-        });
-
-        //end buttoncolours method
-    }
-*/
     //days button code
     @Override
     public void onClick(View v) {

@@ -38,10 +38,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         bottomNavigationView.setSelectedItemId(R.id.alarmtab);
     }
 
-    private String getUserName() {
+    private String getUseremail() {
         FirebaseUser user = mFirebaseAuth.getCurrentUser();
         if(user != null) {
-        return  user.getUid();
+        return  user.getEmail();
         }
         return "ANONYMOUS" ;
     }
