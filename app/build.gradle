@@ -24,7 +24,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             debuggable false
         }
@@ -66,9 +66,15 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
     implementation 'androidx.coordinatorlayout:coordinatorlayout:1.1.0'
 
-    def camerax_version = '1.0.0-alpha06'
+    def camerax_version = "1.1.0-beta01"
     implementation "androidx.camera:camera-core:${camerax_version}"
     implementation "androidx.camera:camera-camera2:${camerax_version}"
+    implementation "androidx.camera:camera-lifecycle:${camerax_version}"
+    implementation "androidx.camera:camera-video:${camerax_version}"
+
+    implementation "androidx.camera:camera-view:${camerax_version}"
+    implementation "androidx.camera:camera-extensions:${camerax_version}"
+
 
     //tensorflow-lite
     implementation 'org.tensorflow:tensorflow-lite:2.3.0'
@@ -78,4 +84,9 @@ dependencies {
     // (Yes, this library is outdated but MLkit was buggy when starting this project and it is working fine)
     //noinspection OutdatedLibrary
     implementation 'com.google.firebase:firebase-ml-vision:24.0.3'
+
+    def activity_version = "1.4.0"
+
+    // Java language implementation
+    implementation "androidx.activity:activity:$activity_version"
 }

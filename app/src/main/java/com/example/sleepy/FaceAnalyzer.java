@@ -27,13 +27,12 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-public class FaceAnalyzer extends CameraActivity implements ImageAnalysis.Analyzer {
+public class FaceAnalyzer extends CameraActivity {
 
     private FirebaseVisionImage fbImage;
     private FaceNet faceNet;
     private FaceRecognition faceRecognition;
     private Activity context;
-    private Button addBtn;
 
     public FaceAnalyzer(FaceNet faceNet, FaceRecognition faceRecognition, Activity context) {
         this.faceNet = faceNet;
@@ -41,22 +40,6 @@ public class FaceAnalyzer extends CameraActivity implements ImageAnalysis.Analyz
         this.context = context;
     }
 
-    public FaceAnalyzer(FaceNet faceNet, Button addBtn, Activity context) {
-        this.faceNet = faceNet;
-        this.context = context;
-        this.addBtn = addBtn;
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    @Override
-    public void analyze(ImageProxy image, int rotationDegrees) {
-        if (image == null || image.getImage() == null) {
-            return;
-        }
-        int rotation = degreesToFirebaseRotation(rotationDegrees);
-        fbImage = FirebaseVisionImage.fromMediaImage(image.getImage(), rotation);
-        initDetector(image);
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     private void initDetector(ImageProxy image) {
@@ -71,7 +54,7 @@ public class FaceAnalyzer extends CameraActivity implements ImageAnalysis.Analyz
         FirebaseVisionFaceDetector faceDetector = FirebaseVision.getInstance().getVisionFaceDetector(detectorOptions);
         //retrieve a list of faces detected (firebaseVisionFaces) and perform facial recognition
         faceDetector.detectInImage(fbImage).addOnSuccessListener(firebaseVisionFaces -> {
-            if (addBtn == null && firebaseVisionFaces.size() == 1) {
+            if (firebaseVisionFaces.size() == 1) {
                 //comparing face embeddings here
                 new Thread(() -> {
                     try {
@@ -96,22 +79,6 @@ public class FaceAnalyzer extends CameraActivity implements ImageAnalysis.Analyz
                 }).start();
 
             }
-
-            if (addBtn != null && firebaseVisionFaces.size() == 1) {
-                addBtn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        FirebaseVisionFace face = firebaseVisionFaces.get(0);
-                        Bitmap croppedFaceBitmap = getFaceBitmap(face);
-                        if(croppedFaceBitmap != null) {
-                            faceNet.addFace(currentUser.getDisplayName(), croppedFaceBitmap, db, currentUser.getEmail());
-                            Intent intent = new Intent(context, MainActivity.class);
-                            context.startActivity(intent);
-                            context.finish();
-                        }
-                    }
-                });
-            }
         });
 
     }
@@ -123,8 +90,8 @@ public class FaceAnalyzer extends CameraActivity implements ImageAnalysis.Analyz
             return false;
         }
         else {
-            Future<Boolean> faceRecognitionFuture = faceNet.recognizeFace(croppedFaceBitmap, faceRecognition);
-            return faceRecognitionFuture.get();
+            Boolean faceRecognitionFuture = faceNet.recognizeFace(croppedFaceBitmap, faceRecognition);
+            return faceRecognitionFuture;
         }
     }
 

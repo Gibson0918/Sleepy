@@ -142,8 +142,13 @@ public class FaceNet {
 
     //Method to compare embeddings of each face detected to the face embeddings stored in the face recognition list
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public Future<Boolean> recognizeFace(Bitmap bitmap, FaceRecognition faceRecognition) {
-        CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
+    public Boolean recognizeFace(Bitmap bitmap, FaceRecognition faceRecognition) {
+        //CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
+
+        if (tflife == null) {
+            return false;
+        }
+
         double smallestDist = Double.MAX_VALUE;
         float[][] unknownFaceEmbeddings = run(bitmap);
 
@@ -159,8 +164,8 @@ public class FaceNet {
         Boolean result = smallestDist > distance ? true : false;
         //Log.d("face",recognizedFace.getName());
         //Log.d("face",  "dist: "+ smallestDist);
-        completableFuture.complete(result);
-        return completableFuture;
+        //completableFuture.complete(result);
+        return result;
     }
 
     public void addFace(String name, Bitmap bitmap, FirebaseFirestore db, String emailAddr){
@@ -175,10 +180,11 @@ public class FaceNet {
             embeddingsList.add(faceEmbeddings[0][i]);
         }
         faces.put("Embeddings",embeddingsList);
-        DocumentReference newData =  db.collection(emailAddr).document();
+        DocumentReference newData =  db.collection(emailAddr).document("Embeddings");
         newData.set(faces).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
+
                 //Snackbar.make(context.findViewById(R.id.coordinatorLayout), "Data added successfully", Snackbar.LENGTH_SHORT).show();
             }
         });

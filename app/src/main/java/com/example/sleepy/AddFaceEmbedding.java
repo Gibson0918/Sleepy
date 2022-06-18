@@ -3,20 +3,28 @@ package com.example.sleepy;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.camera2.Camera2Config;
+import androidx.camera.core.AspectRatio;
+import androidx.camera.core.Camera;
 import androidx.camera.core.CameraInfoUnavailableException;
+import androidx.camera.core.CameraSelector;
 import androidx.camera.core.CameraX;
 import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageAnalysisConfig;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
-import androidx.camera.core.PreviewConfig;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LifecycleOwner;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.Rational;
 import android.util.Size;
 import android.view.TextureView;
 import android.view.View;
@@ -25,26 +33,62 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.ml.vision.FirebaseVision;
+import com.google.firebase.ml.vision.common.FirebaseVisionImage;
+import com.google.firebase.ml.vision.face.FirebaseVisionFace;
+import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetector;
+import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 
 public class AddFaceEmbedding extends AppCompatActivity {
 
-    private int REQUEST_CODE_PERMISSIONS = 1001;
+    private int REQUEST_CODE_PERMISSIONS = 1002;
     private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.RECORD_AUDIO"};
-    private TextureView textureView;
     private FaceNet faceNet;
-    private CameraX.LensFacing lens = CameraX.LensFacing.FRONT;
     private Button addBtn;
+    private PreviewView previewView;
+    private View view;
+    private Executor cameraExecutor;
+    private FirebaseAuth mAuth;
+    private FirebaseUser currentUser;
+    private FirebaseFirestore db;
+
+    private ListenableFuture<ProcessCameraProvider> cameraProviderListenableFuture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_face_embedding);
         bindDisplayItem();
+        mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
+        db = FirebaseFirestore.getInstance();
+        cameraExecutor = ContextCompat.getMainExecutor(this);
+        view = findViewById(R.id.constraintLayout);
+        cameraProviderListenableFuture = ProcessCameraProvider.getInstance(this);
+        cameraProviderListenableFuture.addListener(() -> {
+            try {
+                //check permission for camera
+                if (allPermissionsGranted()) {
+                    ProcessCameraProvider cameraProvider = cameraProviderListenableFuture.get();
+                    bindPreview(cameraProvider);
+                } else {
+                    ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
+                }
+            } catch (ExecutionException | InterruptedException e) {
+                // No errors need to be handled for this Future.
+                // This should never be reached.
+            }
+        }, ContextCompat.getMainExecutor(this));
 
-        // <<Load the facial recognition model  >>
+
+        // <<Load the facial recognition model>>
         faceNet = null;
         try {
             faceNet = new FaceNet(getAssets());
@@ -52,12 +96,68 @@ public class AddFaceEmbedding extends AppCompatActivity {
             Toast.makeText(AddFaceEmbedding.this, "Model not loaded successfully", Toast.LENGTH_SHORT).show();
         }
 
-        //check permission for camera
-        if (allPermissionsGranted()) {
-            textureView.post(this::startCamera); //start camera if permission has been granted by user
-        } else {
-            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
+    }
+
+    void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
+        Preview preview = new Preview.Builder()
+                .build();
+
+        CameraSelector cameraSelector = new CameraSelector.Builder()
+                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                .build();
+
+        preview.setSurfaceProvider(previewView.getSurfaceProvider());
+
+        ImageCapture imageCapture = new ImageCapture.Builder().setTargetRotation(view.getDisplay().getRotation()).build();
+
+        Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner)this, cameraSelector, imageCapture, preview);
+
+        addBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                imageCapture.takePicture(cameraExecutor, new ImageCapture.OnImageCapturedCallback() {
+                    @Override
+                    public void onCaptureSuccess(@NonNull ImageProxy image) {
+                        super.onCaptureSuccess(image);
+                        Toast.makeText(AddFaceEmbedding.this, "Image captured", Toast.LENGTH_SHORT).show();
+                        //run Firebase face detector
+                        //if > 1 face reject image and ask user to take picture again
+                        //else allow the image to go through, cropped it and run faceNet on it, then upload to the database
+                        @SuppressLint("UnsafeOptInUsageError")
+                        FirebaseVisionImage fbImage = FirebaseVisionImage.fromMediaImage(image.getImage(), view.getDisplay().getDisplayId());
+                        //Initialize the face detector
+                        FirebaseVisionFaceDetectorOptions detectorOptions = new FirebaseVisionFaceDetectorOptions
+                                .Builder()
+                                .build();
+                        FirebaseVisionFaceDetector faceDetector = FirebaseVision.getInstance().getVisionFaceDetector(detectorOptions);
+                        //retrieve a list of faces detected (firebaseVisionFaces) and perform facial recognition
+                        faceDetector.detectInImage(fbImage).addOnSuccessListener(firebaseVisionFaces -> {
+
+                            if (firebaseVisionFaces.size() == 1) {
+                                FirebaseVisionFace face = firebaseVisionFaces.get(0);
+                                Bitmap croppedFaceBitmap = getFaceBitmap(face, fbImage);
+                                if(croppedFaceBitmap != null) {
+                                    faceNet.addFace(currentUser.getDisplayName(), croppedFaceBitmap, db, currentUser.getEmail());
+                                    Intent intent = new Intent(AddFaceEmbedding.this, MainActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    private Bitmap getFaceBitmap(FirebaseVisionFace face, FirebaseVisionImage fbImage) {
+        Bitmap originalFrame = fbImage.getBitmap();
+        Bitmap faceBitmap = null;
+        try {
+            faceBitmap = Bitmap.createBitmap(originalFrame, face.getBoundingBox().left, face.getBoundingBox().top, face.getBoundingBox().right - face.getBoundingBox().left, face.getBoundingBox().bottom - face.getBoundingBox().top);
+        } catch (IllegalArgumentException e) {
         }
+        return faceBitmap;
     }
 
     //remove the loaded face recognition model from memory
@@ -67,45 +167,27 @@ public class AddFaceEmbedding extends AppCompatActivity {
         faceNet.close();
     }
 
-    @SuppressLint("RestrictedApi")
-    private void startCamera() {
-        try {
-            // Only bind use cases if we can query a camera with this orientation
-            CameraX.getCameraWithLensFacing(lens);
-            initCamera();
-        } catch (CameraInfoUnavailableException e) {
-            e.printStackTrace();
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
+                ProcessCameraProvider cameraProvider = null;
+                try {
+                    cameraProvider = cameraProviderListenableFuture.get();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                bindPreview(cameraProvider);
+            } else {
+                Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
+                this.finish();
+            }
         }
     }
 
-    //method to start up camera and set up camera preview
-    private void initCamera() {
-        CameraX.unbindAll();
-
-        @SuppressLint("RestrictedApi") PreviewConfig.Builder pc = new PreviewConfig
-                .Builder()
-                .setTargetResolution(new Size(textureView.getWidth(), textureView.getHeight()))
-                .setLensFacing(lens);
-
-        Preview preview = new Preview(pc.build());
-        preview.setOnPreviewOutputUpdateListener(output -> {
-            ViewGroup vg = (ViewGroup) textureView.getParent();
-            vg.removeView(textureView);
-            vg.addView(textureView, 0);
-            textureView.setSurfaceTexture(output.getSurfaceTexture());
-        });
-
-        ImageAnalysisConfig imageAnalysisConfig = new ImageAnalysisConfig
-                .Builder()
-                .setImageReaderMode(ImageAnalysis.ImageReaderMode.ACQUIRE_LATEST_IMAGE)
-                .setTargetResolution(new Size(textureView.getWidth(),textureView.getHeight()))
-                .setLensFacing(lens).build();
-
-        ImageAnalysis imageAnalysis = new ImageAnalysis(imageAnalysisConfig);
-        imageAnalysis.setAnalyzer(Runnable::run,
-                new FaceAnalyzer(faceNet, addBtn, AddFaceEmbedding.this));
-        CameraX.bindToLifecycle(this, preview, imageAnalysis);
-    }
 
     private boolean allPermissionsGranted(){
         for(String permission : REQUIRED_PERMISSIONS){
@@ -116,23 +198,10 @@ public class AddFaceEmbedding extends AppCompatActivity {
         return true;
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-                startCamera();
-            } else {
-                Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
-                this.finish();
-            }
-        }
-    }
-
     private void bindDisplayItem() {
-        textureView = findViewById(R.id.textureView);
         addBtn = findViewById(R.id.addBtn);
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(AddFaceEmbedding.this);
+        previewView = findViewById(R.id.previewView);
+        /*MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(AddFaceEmbedding.this);
         builder.setTitle("Facial recognition!");
         builder.setMessage("Tap on the camera button to capture your face!");
         builder.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
@@ -141,6 +210,6 @@ public class AddFaceEmbedding extends AppCompatActivity {
                 //Do Nothing
             }
         });
-        builder.show();
+        builder.show();*/
     }
 }

@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "223724010218",
+    "firebase_url": "https://sleepy-22538-default-rtdb.firebaseio.com",
     "project_id": "sleepy-22538",
     "storage_bucket": "sleepy-22538.appspot.com"
   },
@@ -22,11 +23,35 @@
           }
         },
         {
+          "client_id": "223724010218-5gm7dcb42bm4ddeaim3svanlhr3r6m58.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sleepy",
+            "certificate_hash": "9ecb82010a172d563c2cc8e5648d980eb06c5e6c"
+          }
+        },
+        {
           "client_id": "223724010218-9vdarfpjoknka83tnvhrumqqbullol88.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.sleepy",
             "certificate_hash": "e053a3835cf3cf9bda6404c8de5c855650e5a2f0"
+          }
+        },
+        {
+          "client_id": "223724010218-k06g2cvtn4m76ja8r5vorn1p70vm5glt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sleepy",
+            "certificate_hash": "d1c078b1c260f38fc67cfdfdc88190c7e61b70b3"
+          }
+        },
+        {
+          "client_id": "223724010218-mua44gllglbq7qa7u53cl2k44dufsmfn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sleepy",
+            "certificate_hash": "51ad910253bf05ccd9c24633e468f4298f0d00ee"
           }
         },
         {
