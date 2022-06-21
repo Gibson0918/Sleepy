@@ -3,6 +3,7 @@ package com.example.sleepy;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +18,7 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,19 +26,17 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.HashMap;
 
 public class LoginActivity extends AppCompatActivity {
 
     private SignInButton googleSignInButton;
-    //private LottieAnimationView lottieAnimationView;
     private GoogleSignInClient mGoogleSignInClient;
-    private FirebaseAuth mAuth;
-    FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
+    private FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
     int RC_SIGN_IN = 10;
 
     @Override
@@ -64,7 +64,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
-
 
 
     @Override
@@ -99,14 +98,50 @@ public class LoginActivity extends AppCompatActivity {
         mFirebaseAuth.signInWithCredential(credential)
                 .addOnSuccessListener(this, authResult -> {
 
+
                     FirebaseFirestore db = FirebaseFirestore.getInstance();
                     db.collection(getusermail()).document("Alarms");
                     startActivity(new Intent(LoginActivity.this, MainActivity.class));
                     finish();
+
+                    FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+                    FirebaseUser currUser = firebaseAuth.getCurrentUser();
+                    assert currUser != null;
+                    String emailAddr = currUser.getEmail();
+                    DocumentReference dbRef = FirebaseFirestore.getInstance().collection(emailAddr).document("Embeddings");
+                    dbRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                DocumentSnapshot documentSnapshot = task.getResult();
+                                if (documentSnapshot.exists()) {
+                                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                                else {
+                                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(LoginActivity.this);
+                                    builder.setTitle("Facial Recognition required!");
+                                    builder.setMessage("Please proceed to add your face!");
+                                    builder.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            Intent intent = new Intent(LoginActivity.this, AddFaceEmbedding.class);
+                                            startActivity(intent);
+                                            finish();
+                                        }
+                                    });
+                                    builder.show();
+                                }
+                            }
+                        }
+                    });
+
                 })
                 .addOnFailureListener(this, e -> Toast.makeText(LoginActivity.this, "Authentication failed.",
                         Toast.LENGTH_SHORT).show());
     }
+
 
 
     private String getusermail() {

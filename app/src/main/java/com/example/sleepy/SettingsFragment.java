@@ -43,12 +43,10 @@ public class SettingsFragment extends Fragment {
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(),CameraActivity.class);
                 startActivity(intent);
-
             }
         });
         return view;
     }
-
 
     // logout
     private void signout() {
