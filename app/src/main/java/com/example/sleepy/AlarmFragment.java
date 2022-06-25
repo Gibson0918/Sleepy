@@ -45,56 +45,39 @@ public class AlarmFragment extends Fragment {
     RecyclerView recyclerView;
     FirebaseFirestore database = FirebaseFirestore.getInstance();
     AlarmAdaptor myAdaptor;
-    ArrayList<alarm_add> list = new ArrayList<>();
+    ArrayList<alarm_add> list;
     FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_alarm, container, false);
         FloatingActionButton buttonadd = view.findViewById(R.id.buttonadd);
-        FirebaseUser user = mFirebaseAuth.getCurrentUser();
 
         recyclerView = view.findViewById(R.id.alarmlist);
-        //recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        list.clear();
+        list = new ArrayList<>();
         Query query = database.collection(getusermail()).document("Alarm")
                 .collection("alarms").orderBy("time",Query.Direction.ASCENDING);
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
+                    alarm_add alarms = queryDocumentSnapshot.toObject(alarm_add.class);
+                    list.add(alarms);
+                }
+            }
+        });
+
         FirestoreRecyclerOptions<alarm_add> options = new FirestoreRecyclerOptions.Builder<alarm_add>()
                 .setQuery(query, alarm_add.class)
                 .build();
         //setup recycle view
-        myAdaptor = new AlarmAdaptor(options);
+        myAdaptor = new AlarmAdaptor(view.getContext(), options, list);
         myAdaptor.notifyDataSetChanged();
-        recyclerView = view.findViewById(R.id.alarmlist);
        // recyclerView.setHasFixedSize(true);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
-        recyclerView.setLayoutManager(linearLayoutManager);
-        //recyclerView.setLayoutManager(new LinearLayoutManager(this.getContext()));
+        recyclerView.setLayoutManager(new WrapContentLinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
         //myAdaptor.notifyDataSetChanged();
         recyclerView.setAdapter(myAdaptor);
-
-/*
-        //db
-       database.collection(getusermail()).document("Alarm").collection("alarms").get()
-               .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-           @Override
-           public void onComplete(@NonNull Task<QuerySnapshot> task) {
-               if (task.isSuccessful()) {
-                   int size = task.getResult().size();
-                   for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
-                       alarm_add alarms = queryDocumentSnapshot.toObject(alarm_add.class);
-                       list.add(alarms);
-                   }
-                   //myAdaptor.notifyDataSetChanged();
-                   myAdaptor.notifyItemRangeChanged(0, myAdaptor.getItemCount());
-                   myAdaptor.notifyItemInserted(size);
-               }
-           }
-       });
-
-*/
 
         myAdaptor.setOnItemClickListener(new AlarmAdaptor.onItemClickListener() {
             @Override
@@ -111,7 +94,6 @@ public class AlarmFragment extends Fragment {
                 getActivity().startActivity(intent);
             }
         });
-
         return view;
     }
 
@@ -123,12 +105,9 @@ public class AlarmFragment extends Fragment {
         return "ANONYMOUS" ;
     }
 
-
     @Override
     public void onStart() {
         super.onStart();
-        //recyclerView.getRecycledViewPool().clear();
-       // myAdaptor.notifyDataSetChanged();
         myAdaptor.startListening();
 
     }

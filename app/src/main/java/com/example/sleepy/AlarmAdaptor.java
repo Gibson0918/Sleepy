@@ -1,6 +1,7 @@
 package com.example.sleepy;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,22 +28,19 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
     ArrayList<alarm_add> list = new ArrayList<>();
     //private RecyclerView.ViewHolder holder;
 
-    public AlarmAdaptor(@NonNull FirestoreRecyclerOptions<alarm_add> options) {
+    public AlarmAdaptor(Context context, @NonNull FirestoreRecyclerOptions<alarm_add> options, ArrayList<alarm_add> list) {
         super(options);
-        // , ArrayList<alarm_add> alarms
-        //this.context = context;
-        //this.list = alarms;
+        this.context = context;
+        this.list = list;
     }
 
     public interface onItemClickListener {
         void onItemClick(int position);
     }
 
-
     public void setOnItemClickListener(onItemClickListener listener) {
         mListener = (onItemClickListener) listener;
     }
-
 
     @Override
     public AlarmAdaptor.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -52,7 +50,7 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
 
     @Override
     protected void onBindViewHolder(@NonNull MyViewHolder holder, int position, @NonNull alarm_add model) {
-        int safeposition = holder.getBindingAdapterPosition();
+        int safeposition = holder.getLayoutPosition();
         alarm_add alarms = list.get(safeposition);
         holder.txttime.setText(model.getTime());
        if(alarms.getIsup() == 1) {
@@ -65,8 +63,7 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
         return list.size();
     }
 
-
-    public  class MyViewHolder extends RecyclerView.ViewHolder {
+    public class MyViewHolder extends RecyclerView.ViewHolder {
         TextView txttime;
         ToggleButton tg_alarmon;
         public MyViewHolder(View itemview , final onItemClickListener listener) {
@@ -77,7 +74,7 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
                 @Override
                 public void onClick(View v) {
                     if(listener != null) {
-                        int position = getBindingAdapterPosition();
+                        int position = getLayoutPosition();
                         if(position != RecyclerView.NO_POSITION) {
                             long key = getItemId();
                             listener.onItemClick(position);
