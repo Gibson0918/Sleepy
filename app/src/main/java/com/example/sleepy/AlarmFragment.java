@@ -61,9 +61,11 @@ public class AlarmFragment extends Fragment {
         query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                list.clear();
                 for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
                     alarm_add alarms = queryDocumentSnapshot.toObject(alarm_add.class);
                     list.add(alarms);
+                    myAdaptor.notifyDataSetChanged();
                 }
             }
         });
@@ -92,6 +94,7 @@ public class AlarmFragment extends Fragment {
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), AddAlarm.class);
                 getActivity().startActivity(intent);
+                //getActivity().finish();
             }
         });
         return view;
