@@ -6,7 +6,13 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -63,5 +69,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 return true;
         }
         return false;
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        getSupportFragmentManager().beginTransaction().detach(alarmFragment).commitNow();
+        getSupportFragmentManager().beginTransaction().attach(alarmFragment).commitNow();
+        Log.e("test", "test");
     }
 }
