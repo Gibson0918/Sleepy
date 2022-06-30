@@ -46,7 +46,7 @@ public class AddAlarm extends AppCompatActivity implements View.OnClickListener 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_alarm);
         Spinner spinnerpuzzle = findViewById(R.id.spinnerProblem);
-       // ArrayList<String> listpuzzle = new ArrayList<>();
+        // ArrayList<String> listpuzzle = new ArrayList<>();
 
         ArrayAdapter ad = new ArrayAdapter(this,android.R.layout.simple_spinner_dropdown_item,spinnerobjects);
         //ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -83,9 +83,9 @@ public class AddAlarm extends AppCompatActivity implements View.OnClickListener 
 
                 String days = "";
                 for(int i = 0; i< buttonclick.length; i++) {
-                if(buttonclick[i] != 0){
-                    days += i;
-                }
+                    if(buttonclick[i] != 0){
+                        days += i;
+                    }
                 }
 
                 //int PuzzleTypeID;
@@ -93,9 +93,15 @@ public class AddAlarm extends AppCompatActivity implements View.OnClickListener 
 
 
                 txt_alarmname = findViewById(R.id.txt_alarmname);
-                alarm_add data = new alarm_add(alarmTime,uid,days,PuzzleType,txt_alarmname.getText().toString(),1);
 
                 FirebaseFirestore db = FirebaseFirestore.getInstance();
+                DocumentReference key;
+                key =  db.collection(getusermail()).document("Alarm").collection("alarms").document();
+                String keyId = key.getId();
+
+                alarm_add data = new alarm_add(keyId, alarmTime,uid,days,PuzzleType,txt_alarmname.getText().toString(),1);
+
+
                 db.collection(getusermail()).document("Alarm").collection("alarms").add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
@@ -144,62 +150,62 @@ public class AddAlarm extends AppCompatActivity implements View.OnClickListener 
     //days button code
     @Override
     public void onClick(View v) {
-      if(v.getId() == R.id.btn_sun) {
-          buttonclick[0]++;
-          if (buttonclick[0] == 1) {
-              btn_sun.setBackgroundColor(Color.GREEN);
-          } else {
-              btn_sun.setBackgroundColor(Color.BLUE);
-              buttonclick[0] = 0;
-          }
-      } else if (v.getId() == R.id.btn_mon) {
-          buttonclick[1]++;
-          if(buttonclick[1] == 1) {
-              btn_mon.setBackgroundColor(Color.GREEN);
-          } else {
-              btn_mon.setBackgroundColor(Color.BLUE);
-              buttonclick[1] = 0;
-          }
-      } else if (v.getId() == R.id.btn_tue) {
-          buttonclick[2]++;
-          if(buttonclick[2] == 1) {
-              btn_tue.setBackgroundColor(Color.GREEN);
-          } else {
-              btn_tue.setBackgroundColor(Color.BLUE);
-              buttonclick[2] = 0;
-          }
-      } else if (v.getId() == R.id.btn_wed) {
-          buttonclick[3]++;
-          if(buttonclick[3] == 1) {
-              btn_wed.setBackgroundColor(Color.GREEN);
-          } else {
-              btn_wed.setBackgroundColor(Color.BLUE);
-              buttonclick[3] = 0;
-          }
-      } else if (v.getId() == R.id.btn_thur) {
-          buttonclick[4]++;
-          if(buttonclick[4] == 1) {
-              btn_thur.setBackgroundColor(Color.GREEN);
-          } else {
-              btn_thur.setBackgroundColor(Color.BLUE);
-              buttonclick[4] = 0;
-          }
-      } else if (v.getId() == R.id.btn_fri) { buttonclick[5]++;
-          if(buttonclick[5] == 1) {
-              btn_fri.setBackgroundColor(Color.GREEN);
-          } else {
-              btn_fri.setBackgroundColor(Color.BLUE);
-              buttonclick[5] = 0;
-          }
-      } else if (v.getId() == R.id.btn_sat) {
-          buttonclick[6]++;
-          if(buttonclick[6] == 1) {
-              btn_sat.setBackgroundColor(Color.GREEN);
-          } else {
-              btn_sat.setBackgroundColor(Color.BLUE);
-              buttonclick[6] = 0;
-          }
-      }
+        if(v.getId() == R.id.btn_sun) {
+            buttonclick[0]++;
+            if (buttonclick[0] == 1) {
+                btn_sun.setBackgroundColor(Color.GREEN);
+            } else {
+                btn_sun.setBackgroundColor(Color.BLUE);
+                buttonclick[0] = 0;
+            }
+        } else if (v.getId() == R.id.btn_mon) {
+            buttonclick[1]++;
+            if(buttonclick[1] == 1) {
+                btn_mon.setBackgroundColor(Color.GREEN);
+            } else {
+                btn_mon.setBackgroundColor(Color.BLUE);
+                buttonclick[1] = 0;
+            }
+        } else if (v.getId() == R.id.btn_tue) {
+            buttonclick[2]++;
+            if(buttonclick[2] == 1) {
+                btn_tue.setBackgroundColor(Color.GREEN);
+            } else {
+                btn_tue.setBackgroundColor(Color.BLUE);
+                buttonclick[2] = 0;
+            }
+        } else if (v.getId() == R.id.btn_wed) {
+            buttonclick[3]++;
+            if(buttonclick[3] == 1) {
+                btn_wed.setBackgroundColor(Color.GREEN);
+            } else {
+                btn_wed.setBackgroundColor(Color.BLUE);
+                buttonclick[3] = 0;
+            }
+        } else if (v.getId() == R.id.btn_thur) {
+            buttonclick[4]++;
+            if(buttonclick[4] == 1) {
+                btn_thur.setBackgroundColor(Color.GREEN);
+            } else {
+                btn_thur.setBackgroundColor(Color.BLUE);
+                buttonclick[4] = 0;
+            }
+        } else if (v.getId() == R.id.btn_fri) { buttonclick[5]++;
+            if(buttonclick[5] == 1) {
+                btn_fri.setBackgroundColor(Color.GREEN);
+            } else {
+                btn_fri.setBackgroundColor(Color.BLUE);
+                buttonclick[5] = 0;
+            }
+        } else if (v.getId() == R.id.btn_sat) {
+            buttonclick[6]++;
+            if(buttonclick[6] == 1) {
+                btn_sat.setBackgroundColor(Color.GREEN);
+            } else {
+                btn_sat.setBackgroundColor(Color.BLUE);
+                buttonclick[6] = 0;
+            }
+        }
 
 
     }

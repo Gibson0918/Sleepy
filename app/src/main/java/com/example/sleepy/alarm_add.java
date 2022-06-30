@@ -13,7 +13,7 @@ public class alarm_add {
     public alarm_add() {
     }
 
-    public alarm_add(String Time, String UserID, String days, String PuzzleType, String label, Integer isup){
+    public alarm_add(String AlarmID , String Time, String UserID, String days, String PuzzleType, String label, Integer isup){
         this.AlarmID = AlarmID;
         this.Time = Time;
         this.UserID = UserID;
@@ -22,6 +22,7 @@ public class alarm_add {
         this.label = label;
         this.isup = isup;
     }
+
 
     public String getPuzzleType() {
         return PuzzleType;

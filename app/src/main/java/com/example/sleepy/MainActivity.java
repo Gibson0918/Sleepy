@@ -6,13 +6,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -42,19 +37,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         bottomNavigationView = findViewById(R.id.bottomnav);
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
         bottomNavigationView.setSelectedItemId(R.id.alarmtab);
-    }
-
-    private String getUseremail() {
-        FirebaseUser user = mFirebaseAuth.getCurrentUser();
-        if(user != null) {
-        return  user.getEmail();
-        }
-        return "ANONYMOUS" ;
+        //startService(new Intent(getApplicationContext(),MyService.class));
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-       Fragment selected = null;
+        Fragment selected = null;
         switch (item.getItemId()) {
             case R.id.alarmtab:
                 getSupportFragmentManager().beginTransaction().replace(R.id.container, alarmFragment).commit();
@@ -69,12 +57,5 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 return true;
         }
         return false;
-    }
-    @Override
-    public void onResume() {
-        super.onResume();
-        getSupportFragmentManager().beginTransaction().detach(alarmFragment).commitNow();
-        getSupportFragmentManager().beginTransaction().attach(alarmFragment).commitNow();
-        Log.e("test", "test");
     }
 }

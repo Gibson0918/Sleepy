@@ -16,31 +16,48 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
 public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdaptor.MyViewHolder> {
 
-    //https://stackoverflow.com/questions/49277797/how-to-display-data-from-firestore-in-a-recyclerview-with-android/49277842
-
     Context context;
     private onItemClickListener mListener;
-    ArrayList<alarm_add> list = new ArrayList<>();
-    //private RecyclerView.ViewHolder holder;
+    ArrayList<alarm_add> list;
+    FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
 
-    public AlarmAdaptor(Context context, @NonNull FirestoreRecyclerOptions<alarm_add> options, ArrayList<alarm_add> list) {
+
+    /**
+     * Create a new RecyclerView adapter that listens to a Firestore Query.  See {@link
+     * FirestoreRecyclerOptions} for configuration options.
+     *
+     * @param options
+     */
+    public AlarmAdaptor(Context context , @NonNull FirestoreRecyclerOptions<alarm_add> options , ArrayList<alarm_add> alarms) {
         super(options);
         this.context = context;
-        this.list = list;
+        this.list = alarms;
     }
+
 
     public interface onItemClickListener {
         void onItemClick(int position);
     }
 
+
     public void setOnItemClickListener(onItemClickListener listener) {
         mListener = (onItemClickListener) listener;
     }
+
 
     @Override
     public AlarmAdaptor.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -53,9 +70,89 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
         int safeposition = holder.getLayoutPosition();
         alarm_add alarms = list.get(safeposition);
         holder.txttime.setText(model.getTime());
-       if(alarms.getIsup() == 1) {
+
+        if(model.getIsup() == 1) {
             holder.tg_alarmon.setChecked(true);
+        } else {
+            holder.tg_alarmon.setChecked(false);
         }
+
+
+        holder.tg_alarmon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                String alarmID = list.get(safeposition).getAlarmID();
+                Log.e("UPDATE", alarmID);
+                FirebaseFirestore database = FirebaseFirestore.getInstance();
+                CollectionReference itemref = database.collection(getusermail()).document("Alarm")
+                        .collection("alarms");
+                Query update = itemref.whereEqualTo("alarmID", alarmID);
+                update.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if(task.isSuccessful()){
+                            for(DocumentSnapshot snapshot : task.getResult()) {
+                                if(isChecked){
+                                    itemref.document(snapshot.getId()).update("isup", 1);
+                                } else {
+                                    itemref.document(snapshot.getId()).update("isup", 0);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+
+        /*
+
+        holder.tg_alarmon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String alarmID = list.get(safeposition).getAlarmID();
+                Log.e("UPDATE", alarmID);
+                FirebaseFirestore database = FirebaseFirestore.getInstance();
+                CollectionReference itemref = database.collection(getusermail()).document("Alarm")
+                        .collection("alarms");
+                Query update = itemref.whereEqualTo("alarmID", alarmID);
+                update.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if(task.isSuccessful()){
+                            for(DocumentSnapshot snapshot : task.getResult()){
+                                alarm_add alarms = snapshot.toObject(alarm_add.class);
+                                if (alarms.getIsup() == 1) {
+                                    itemref.document(snapshot.getId()).update("isup", 0);
+                                   // holder.tg_alarmon.setChecked(false);
+                                } else {
+                                    itemref.document(snapshot.getId()).update("isup", 1);
+                                    //holder.tg_alarmon.setChecked(true);
+                                }
+                            }
+                        } else {
+                            Log.e("UPDATE", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+            }
+        }); //toggle end
+
+
+         */
+
+    }
+
+    public alarm_add getAlarmAt(int position){
+        return list.get(position);
+    }
+
+    private String getusermail() {
+        FirebaseUser user = mFirebaseAuth.getCurrentUser();
+        if(user != null) {
+            return  user.getEmail();
+        }
+        return "ANONYMOUS" ;
     }
 
     @Override
@@ -63,7 +160,8 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
         return list.size();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
+
+    public static class MyViewHolder extends RecyclerView.ViewHolder {
         TextView txttime;
         ToggleButton tg_alarmon;
         public MyViewHolder(View itemview , final onItemClickListener listener) {
@@ -74,7 +172,7 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
                 @Override
                 public void onClick(View v) {
                     if(listener != null) {
-                        int position = getLayoutPosition();
+                        int position = getBindingAdapterPosition();
                         if(position != RecyclerView.NO_POSITION) {
                             long key = getItemId();
                             listener.onItemClick(position);
