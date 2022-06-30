@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -97,6 +98,45 @@ public class AlarmFragment extends Fragment {
                 //getActivity().finish();
             }
         });
+
+
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                // list.remove(viewHolder.getAdapterPosition());
+                String alarmID = myAdaptor.getAlarmAt(viewHolder.getAdapterPosition()).getAlarmID();
+                Log.e("swipe recycleview", "onSwiped: REMOVED " + viewHolder.getAdapterPosition() + " id : " + alarmID );
+
+                CollectionReference itemref = database.collection(getusermail()).document("Alarm")
+                        .collection("alarms");
+                Query remove = itemref.whereEqualTo("alarmID", alarmID);
+                remove.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        Log.e("DELETE", ";;; ", task.getException());
+                        if(task.isSuccessful()){
+                            for(DocumentSnapshot snapshot : task.getResult()){
+                                itemref.document(snapshot.getId()).delete();
+                                Toast.makeText(getContext(), "Alarm Deleted", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        else {
+                            Log.e("DELETE", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+
+                myAdaptor.notifyDataSetChanged();
+            }
+        }).attachToRecyclerView(recyclerView);
+
+
+
         return view;
     }
 
