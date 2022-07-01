@@ -16,8 +16,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -32,7 +34,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -46,23 +50,19 @@ public class AlarmFragment extends Fragment {
     RecyclerView recyclerView;
     FirebaseFirestore database = FirebaseFirestore.getInstance();
     AlarmAdaptor myAdaptor;
-    ArrayList<alarm_add> list;
+    ArrayList<alarm_add> list = new ArrayList<>();
     FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_alarm, container, false);
         FloatingActionButton buttonadd = view.findViewById(R.id.buttonadd);
-
-        recyclerView = view.findViewById(R.id.alarmlist);
-
-        list = new ArrayList<>();
+        list.clear();
         Query query = database.collection(getusermail()).document("Alarm")
                 .collection("alarms").orderBy("time",Query.Direction.ASCENDING);
         query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                list.clear();
                 for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
                     alarm_add alarms = queryDocumentSnapshot.toObject(alarm_add.class);
                     list.add(alarms);
@@ -70,37 +70,37 @@ public class AlarmFragment extends Fragment {
                 }
             }
         });
-
         FirestoreRecyclerOptions<alarm_add> options = new FirestoreRecyclerOptions.Builder<alarm_add>()
                 .setQuery(query, alarm_add.class)
                 .build();
         //setup recycle view
+        recyclerView = view.findViewById(R.id.alarmlist);
         myAdaptor = new AlarmAdaptor(view.getContext(), options, list);
         myAdaptor.notifyDataSetChanged();
-       // recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new WrapContentLinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
-        //myAdaptor.notifyDataSetChanged();
         recyclerView.setAdapter(myAdaptor);
 
         myAdaptor.setOnItemClickListener(new AlarmAdaptor.onItemClickListener() {
             @Override
             public void onItemClick(int position) {
-                Toast.makeText(getContext(), list.get(position).getTime(), Toast.LENGTH_SHORT).show();
-                // Toast.makeText(getContext(), keys.get(position), Toast.LENGTH_SHORT).show();
+                Intent i = new Intent(getContext(),UpdateAlarm.class);
+                i.putExtra("alarmid", list.get(position).getAlarmID());
+                Toast.makeText(getContext(), list.get(position).getAlarmID(), Toast.LENGTH_SHORT).show();
+                startActivity(i);
             }
         });
+
 
         buttonadd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), AddAlarm.class);
-                getActivity().startActivity(intent);
-                //getActivity().finish();
+                startActivity(intent);
             }
         });
 
 
-        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT) {
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
                 return false;
@@ -122,7 +122,6 @@ public class AlarmFragment extends Fragment {
                         if(task.isSuccessful()){
                             for(DocumentSnapshot snapshot : task.getResult()){
                                 itemref.document(snapshot.getId()).delete();
-                                Toast.makeText(getContext(), "Alarm Deleted", Toast.LENGTH_SHORT).show();
                             }
                         }
                         else {
@@ -135,22 +134,15 @@ public class AlarmFragment extends Fragment {
             }
         }).attachToRecyclerView(recyclerView);
 
-
-
         return view;
     }
 
-    private String getusermail() {
-        FirebaseUser user = mFirebaseAuth.getCurrentUser();
-        if(user != null) {
-            return  user.getEmail();
-        }
-        return "ANONYMOUS" ;
-    }
 
     @Override
     public void onStart() {
         super.onStart();
+        recyclerView.getRecycledViewPool().clear();
+        myAdaptor.notifyDataSetChanged();
         myAdaptor.startListening();
 
     }
@@ -160,4 +152,14 @@ public class AlarmFragment extends Fragment {
         super.onStop();
         myAdaptor.stopListening();
     }
+
+
+    private String getusermail() {
+        FirebaseUser user = mFirebaseAuth.getCurrentUser();
+        if(user != null) {
+            return  user.getEmail();
+        }
+        return "ANONYMOUS" ;
+    }
+
 }
