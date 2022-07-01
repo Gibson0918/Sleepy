@@ -2,9 +2,17 @@ package com.example.sleepy;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
+
+import android.os.Handler;
+import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -19,6 +27,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
 
 public class AddAlarm extends AppCompatActivity implements View.OnClickListener {
 
@@ -84,6 +96,10 @@ public class AddAlarm extends AppCompatActivity implements View.OnClickListener 
 
                 txt_alarmname = findViewById(R.id.txtalarmlable);
 
+                String[] timespilt = alarmTime.split(":");
+                Log.d("hour", timespilt[0]);
+                Log.d("min", timespilt[1]);
+
                 FirebaseFirestore db = FirebaseFirestore.getInstance();
                 DocumentReference key;
                 key =  db.collection(getusermail()).document("Alarm").collection("alarms").document();
@@ -91,12 +107,35 @@ public class AddAlarm extends AppCompatActivity implements View.OnClickListener 
 
                 alarm_add data = new alarm_add(keyId, alarmTime,uid,days,PuzzleType,txt_alarmname.getText().toString(),1);
 
-
+                String finalDays = days;
                 db.collection(getusermail()).document("Alarm").collection("alarms").add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
-                        Intent intent = new Intent(AddAlarm.this,MainActivity.class);
-                        startActivity(intent);
+                        Calendar calNow = Calendar.getInstance();
+                        for (char c: finalDays.toCharArray()) {
+                            Calendar calSet = (Calendar) calNow.clone();
+
+                            calSet.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timespilt[0].trim()));
+                            calSet.set(Calendar.MINUTE, Integer.parseInt(timespilt[1].trim()));
+                            calSet.set(Calendar.SECOND,0);
+                            calSet.set(Calendar.MILLISECOND,0);
+                            Log.e("day", String.valueOf(c - 47));
+                            calSet.set(Calendar.DAY_OF_WEEK, c - 47);
+                            if (calSet.compareTo(calNow) <= 0) {
+                                calSet.add(Calendar.DATE, 7);
+                            }
+
+                            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                            Intent intent = new Intent(AddAlarm.this, AlarmReceiver.class);
+                            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 100, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                            Log.e("calSet TIME: ", String.valueOf(calSet.getTimeInMillis()));
+                            alarmManager.set(AlarmManager.RTC_WAKEUP, calSet.getTimeInMillis(), pendingIntent);
+                            //alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calSet.getTimeInMillis(), (DateUtils.DAY_IN_MILLIS) * 7, pendingIntent);
+
+
+                        }
+
+                        finish();
                         Toast.makeText(getApplicationContext(), "Alarm Created", Toast.LENGTH_SHORT).show();
                     }
                 });

@@ -6,4 +6,6 @@
     <string name="title_activity_camera">CameraActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="channel_name">Sleepy</string>
+    <string name="channel_description">Alarm app</string>
 </resources>

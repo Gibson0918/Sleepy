@@ -1,4 +1,14 @@
 package com.example.sleepy;
 
-public class Snooze {
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+
+public class Snooze extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_snooze);
+    }
 }

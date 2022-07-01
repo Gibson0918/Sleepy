@@ -58,6 +58,11 @@ public class AlarmFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_alarm, container, false);
         FloatingActionButton buttonadd = view.findViewById(R.id.buttonadd);
         list.clear();
+
+        recyclerView = view.findViewById(R.id.alarmlist);
+        Log.e("alarmFragment", "called!");
+
+        list = new ArrayList<>();
         Query query = database.collection(getusermail()).document("Alarm")
                 .collection("alarms").orderBy("time",Query.Direction.ASCENDING);
         query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {

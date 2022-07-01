@@ -93,4 +93,8 @@ dependencies {
 
     // Java language implementation
     implementation "androidx.activity:activity:$activity_version"
+
+    def core_version = "1.6.0"
+
+    implementation "androidx.core:core:$core_version"
 }
