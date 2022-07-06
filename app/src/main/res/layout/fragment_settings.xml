@@ -21,12 +21,19 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:text="Button" />
+        android:text="Camera test" />
 
     <Button
         android:id="@+id/btn_logout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="end"
         android:text="LOGOUT" />
+
+    <Button
+        android:id="@+id/snoozetest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Snooze test" />
 
 </FrameLayout>

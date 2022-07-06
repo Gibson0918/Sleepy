@@ -3,8 +3,10 @@ package com.example.sleepy;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -33,10 +35,21 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
     int RC_SIGN_IN = 10;
 
+    SharedPreferences sharedpreferences;
+
+    public static final String Email = "emailKey";// creating constant keys for shared preferences.
+    public static final String SHARED_PREFS = "shared_prefs";
+    String sharedemail;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        sharedpreferences = getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
+        sharedemail = sharedpreferences.getString(Email, null);
+
+
         googleSignInButton = findViewById(R.id.sign_in_button);
         //Toast.makeText(this, getUserName(), Toast.LENGTH_SHORT).show();
         // Configure sign-in to request the user's ID, email address, and basic
@@ -92,6 +105,15 @@ public class LoginActivity extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 DocumentSnapshot documentSnapshot = task.getResult();
                                 if (documentSnapshot.exists()) {
+
+                                    SharedPreferences.Editor editor = sharedpreferences.edit();
+                                    editor.clear();
+                                    editor.putString(Email, emailAddr);
+                                    editor.apply();
+                                    editor.commit();
+
+                                    Log.e("email", emailAddr );
+
                                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                     startActivity(intent);
                                     finish();
@@ -104,6 +126,16 @@ public class LoginActivity extends AppCompatActivity {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
                                             //Intent intent = new Intent(LoginActivity.this, AddFaceEmbedding.class);
+
+                                            //remove afterwards
+                                            SharedPreferences.Editor editor = sharedpreferences.edit();
+                                            editor.clear();
+                                            editor.putString(Email, emailAddr);
+                                            editor.apply();
+                                            editor.commit();
+
+                                            Log.e("email", emailAddr );
+
                                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                             startActivity(intent);
                                             finish();
@@ -125,5 +157,15 @@ public class LoginActivity extends AppCompatActivity {
             return  user.getEmail();
         }
         return "ANONYMOUS" ;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(sharedemail != null){
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 }

@@ -7,12 +7,9 @@
     tools:context=".HistoryFragment">
 
 
-    <Button
-        android:id="@+id/alarmring"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:text="Alarm testing" />
+    <ListView
+        android:id="@+id/listhistory"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </FrameLayout>
