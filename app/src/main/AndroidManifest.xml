@@ -14,6 +14,7 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.SET_ALARM" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application
         android:allowBackup="true"
@@ -31,6 +32,9 @@
             android:exported="false" />
         <activity
             android:name=".AddFaceEmbedding"
+            android:exported="false"/>
+        <activity
+            android:name=".UpdateAlarm"
             android:exported="false" />
         <activity
             android:name=".AddAlarm"
@@ -55,6 +59,14 @@
         </activity>
 
         <receiver android:name=".AlarmReceiver" />
+
+        <receiver android:name=".TerminateServiceReciver"/>
+
+        <service
+            android:name=".AlarmService"
+            android:enabled="true"
+            android:exported="true">
+        </service>
 
         <meta-data
             android:name="preloaded_fonts"

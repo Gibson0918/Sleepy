@@ -38,7 +38,7 @@ public class AlarmReceiver extends BroadcastReceiver {
             } else {
                 Log.e("Can Vibrate", "NO");
             }
-        String alarmtime = "100";
+        String alarmtime = intent.getStringExtra("passing_time");
         Intent i = new Intent(context,Snooze.class);
         i.putExtra("alarmtiming", alarmtime);
 
@@ -59,10 +59,12 @@ public class AlarmReceiver extends BroadcastReceiver {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setFullScreenIntent(pendingIntent, true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setCategory(NotificationCompat.CATEGORY_ALARM);
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setGroup("SLEEPY")
+                .setVibrate(pattern);
 
 
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
-        notificationManagerCompat.notify(123,builder.build());
+        notificationManagerCompat.notify((int) System.currentTimeMillis(),builder.build());
     }
 }

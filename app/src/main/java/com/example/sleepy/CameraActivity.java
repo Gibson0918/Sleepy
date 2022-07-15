@@ -129,13 +129,13 @@ public class CameraActivity extends AppCompatActivity {
         }, cameraExecutor);
     }
 
-    void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
+    synchronized void bindPreview(@NonNull ProcessCameraProvider cameraProvider) {
 
         Preview preview = new Preview.Builder()
                 .build();
 
         CameraSelector cameraSelector = new CameraSelector.Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
                 .build();
 
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
@@ -172,7 +172,6 @@ public class CameraActivity extends AppCompatActivity {
                         try {
                             if (processFaces((firebaseVisionFaces))) {
                                 finish();
-                                //Toast.makeText(CameraActivity.this, "User verified!", Toast.LENGTH_SHORT).show();
                             }
                         } catch (ExecutionException e) {
                             e.printStackTrace();

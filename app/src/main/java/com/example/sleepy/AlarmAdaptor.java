@@ -35,7 +35,6 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
     ArrayList<alarm_add> list;
     FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
 
-
     /**
      * Create a new RecyclerView adapter that listens to a Firestore Query.  See {@link
      * FirestoreRecyclerOptions} for configuration options.
@@ -48,16 +47,13 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
         this.list = alarms;
     }
 
-
     public interface onItemClickListener {
         void onItemClick(int position);
     }
 
-
     public void setOnItemClickListener(onItemClickListener listener) {
         mListener = (onItemClickListener) listener;
     }
-
 
     @Override
     public AlarmAdaptor.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -68,7 +64,7 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
     @Override
     protected void onBindViewHolder(@NonNull MyViewHolder holder, int position, @NonNull alarm_add model) {
         int safeposition = holder.getLayoutPosition();
-        alarm_add alarms = list.get(safeposition);
+        //alarm_add alarms = list.get(safeposition);
         holder.txttime.setText(model.getTime());
 
         if(model.getIsup() == 1) {

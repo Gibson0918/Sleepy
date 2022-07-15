@@ -103,7 +103,7 @@ public class AddFaceEmbedding extends AppCompatActivity {
                 .build();
 
         CameraSelector cameraSelector = new CameraSelector.Builder()
-                .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
                 .build();
 
         preview.setSurfaceProvider(previewView.getSurfaceProvider());
@@ -187,7 +187,6 @@ public class AddFaceEmbedding extends AppCompatActivity {
             }
         }
     }
-
 
     private boolean allPermissionsGranted(){
         for(String permission : REQUIRED_PERMISSIONS){

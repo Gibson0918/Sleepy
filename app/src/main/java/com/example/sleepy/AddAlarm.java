@@ -1,5 +1,6 @@
 package com.example.sleepy;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlarmManager;
@@ -8,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 
 import android.os.Handler;
@@ -109,8 +111,11 @@ public class AddAlarm extends AppCompatActivity implements View.OnClickListener 
 
                 String finalDays = days;
                 db.collection(getusermail()).document("Alarm").collection("alarms").add(data).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
+
+
                         Calendar calNow = Calendar.getInstance();
                         for (char c: finalDays.toCharArray()) {
                             Calendar calSet = (Calendar) calNow.clone();
@@ -127,12 +132,11 @@ public class AddAlarm extends AppCompatActivity implements View.OnClickListener 
 
                             AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                             Intent intent = new Intent(AddAlarm.this, AlarmReceiver.class);
-                            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 100, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                            intent.putExtra("passing_time", alarmTime);
+                            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), (int) System.currentTimeMillis(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
                             Log.e("calSet TIME: ", String.valueOf(calSet.getTimeInMillis()));
                             alarmManager.set(AlarmManager.RTC_WAKEUP, calSet.getTimeInMillis(), pendingIntent);
-                            //alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calSet.getTimeInMillis(), (DateUtils.DAY_IN_MILLIS) * 7, pendingIntent);
-
-
+                            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calSet.getTimeInMillis(), (DateUtils.DAY_IN_MILLIS) * 7, pendingIntent);
                         }
 
                         finish();

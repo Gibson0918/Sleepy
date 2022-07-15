@@ -81,7 +81,7 @@ public class AlarmFragment extends Fragment {
         //setup recycle view
         recyclerView = view.findViewById(R.id.alarmlist);
         myAdaptor = new AlarmAdaptor(view.getContext(), options, list);
-        myAdaptor.notifyDataSetChanged();
+        //myAdaptor.notifyDataSetChanged();
         recyclerView.setLayoutManager(new WrapContentLinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
         recyclerView.setAdapter(myAdaptor);
 
@@ -127,6 +127,7 @@ public class AlarmFragment extends Fragment {
                         if(task.isSuccessful()){
                             for(DocumentSnapshot snapshot : task.getResult()){
                                 itemref.document(snapshot.getId()).delete();
+                                list.remove(viewHolder.getAdapterPosition());
                             }
                         }
                         else {
@@ -139,6 +140,7 @@ public class AlarmFragment extends Fragment {
             }
         }).attachToRecyclerView(recyclerView);
 
+
         return view;
     }
 
@@ -147,7 +149,6 @@ public class AlarmFragment extends Fragment {
     public void onStart() {
         super.onStart();
         recyclerView.getRecycledViewPool().clear();
-        myAdaptor.notifyDataSetChanged();
         myAdaptor.startListening();
 
     }

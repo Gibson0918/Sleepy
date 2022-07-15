@@ -92,7 +92,7 @@ public class Puzzle extends AppCompatActivity {
                             .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                                 @Override
                                 public void onSuccess(DocumentReference documentReference) {
-                                    Intent intent = new Intent(Puzzle.this, MainActivity.class);
+                                    Intent intent = new Intent(Puzzle.this, CameraActivity.class);
                                     startActivity(intent);
                                     finish();
                                 }

@@ -1,6 +1,7 @@
 package com.example.sleepy;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -10,6 +11,7 @@ import android.app.AlarmManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -36,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
 
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,9 +47,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         bottomNavigationView = findViewById(R.id.bottomnav);
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
         bottomNavigationView.setSelectedItemId(R.id.alarmtab);
-
         createNotificationChannel();
-
+        Intent alarmSvcIntent = new Intent(this, AlarmService.class);
+        alarmSvcIntent.putExtra("EMAIL", getUseremail());
+        startForegroundService(alarmSvcIntent);
     }
 
     private String getUseremail() {
@@ -59,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        Fragment selected = null;
+        //Fragment selected = null;
         switch (item.getItemId()) {
             case R.id.alarmtab:
                 getSupportFragmentManager().beginTransaction().replace(R.id.container, alarmFragment).commit();
@@ -89,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = getString(R.string.channel_name);
             String description = getString(R.string.channel_description);
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
             // Register the channel with the system; you can't change the importance
