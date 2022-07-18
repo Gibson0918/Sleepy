@@ -7,9 +7,30 @@
     tools:context=".HistoryFragment">
 
 
-    <ListView
-        android:id="@+id/listhistory"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="History"
+            android:textSize="24sp" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="10dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclehistory"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:spanCount="1"
+            tools:listitem="@layout/historycard" />
+    </LinearLayout>
 
 </FrameLayout>

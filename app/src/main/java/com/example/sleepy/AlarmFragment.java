@@ -57,7 +57,6 @@ public class AlarmFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_alarm, container, false);
         FloatingActionButton buttonadd = view.findViewById(R.id.buttonadd);
-        list.clear();
 
         recyclerView = view.findViewById(R.id.alarmlist);
         Log.e("alarmFragment", "called!");

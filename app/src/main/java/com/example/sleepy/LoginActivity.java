@@ -136,8 +136,8 @@ public class LoginActivity extends AppCompatActivity {
 
                                             Log.e("email", emailAddr );
 
-                                            //Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                            Intent intent = new Intent(LoginActivity.this, AddFaceEmbedding.class);
+                                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                           // Intent intent = new Intent(LoginActivity.this, AddFaceEmbedding.class);
                                             //Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                             startActivity(intent);
                                             finish();

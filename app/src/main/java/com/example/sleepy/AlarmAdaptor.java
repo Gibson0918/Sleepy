@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -162,7 +161,7 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
         ToggleButton tg_alarmon;
         public MyViewHolder(View itemview , final onItemClickListener listener) {
             super(itemview);
-            txttime = itemview.findViewById(R.id.txtTime);
+            txttime = itemview.findViewById(R.id.txthistories);
             tg_alarmon = itemview.findViewById(R.id.tg_alarmon);
             itemview.setOnClickListener(new View.OnClickListener() {
                 @Override
