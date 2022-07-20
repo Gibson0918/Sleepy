@@ -9,31 +9,32 @@
     tools:context=".SettingsFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="Settings frag" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/CameraButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:text="Camera test" />
+        <Button
+            android:id="@+id/CameraButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="276dp"
+            android:gravity="center"
+            android:text="Camera test"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/btn_logout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:text="LOGOUT" />
-
-    <Button
-        android:id="@+id/snoozetest"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Snooze test" />
+        <Button
+            android:id="@+id/btn_logout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="52dp"
+            android:text="LOGOUT"
+            app:layout_constraintEnd_toEndOf="@+id/CameraButton"
+            app:layout_constraintStart_toStartOf="@+id/CameraButton"
+            app:layout_constraintTop_toBottomOf="@+id/CameraButton" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>

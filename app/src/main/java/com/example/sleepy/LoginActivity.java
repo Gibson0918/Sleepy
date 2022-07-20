@@ -29,6 +29,8 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import org.w3c.dom.Document;
+
 public class LoginActivity extends AppCompatActivity {
     private SignInButton googleSignInButton;
     private GoogleSignInClient mGoogleSignInClient;
@@ -93,11 +95,24 @@ public class LoginActivity extends AppCompatActivity {
         mFirebaseAuth.signInWithCredential(credential)
                 .addOnSuccessListener(this, authResult -> {
                     FirebaseFirestore db = FirebaseFirestore.getInstance();
-                    db.collection(getusermail()).document("Alarms");
                     FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
                     FirebaseUser currUser = firebaseAuth.getCurrentUser();
                     assert currUser != null;
                     String emailAddr = currUser.getEmail();
+
+                    DocumentReference countRef = db.collection(getusermail()).document("Counter");
+                    countRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.isSuccessful()) {
+                                DocumentSnapshot documentSnapshot1 = task.getResult();
+                                if (!documentSnapshot1.exists()) {
+                                    db.collection(getusermail()).document("Counter").set(new Counter());
+                                }
+                            }
+                        }
+                    });
+
                     DocumentReference dbRef = FirebaseFirestore.getInstance().collection(emailAddr).document("Embeddings");
                     dbRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
@@ -117,6 +132,7 @@ public class LoginActivity extends AppCompatActivity {
                                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                     startActivity(intent);
                                     finish();
+
                                 }
                                 else {
                                     MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(LoginActivity.this);

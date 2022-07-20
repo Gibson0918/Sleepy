@@ -4,7 +4,7 @@ public class alarm_add {
     String AlarmID;
     String PuzzleType;
     String Days;
-    String TaskID;
+    Integer TaskID;
     String Time;
     String UserID;
     String label;
@@ -13,7 +13,7 @@ public class alarm_add {
     public alarm_add() {
     }
 
-    public alarm_add(String AlarmID , String Time, String UserID, String days, String PuzzleType, String label, Integer isup){
+    public alarm_add(String AlarmID , String Time, String UserID, String days, String PuzzleType, String label, Integer isup, Integer taskID){
         this.AlarmID = AlarmID;
         this.Time = Time;
         this.UserID = UserID;
@@ -21,6 +21,7 @@ public class alarm_add {
         this.PuzzleType = PuzzleType;
         this.label = label;
         this.isup = isup;
+        this.TaskID = taskID;
     }
 
 
@@ -65,11 +66,11 @@ public class alarm_add {
         Days = days;
     }
 
-    public String getTaskID() {
+    public Integer getTaskID() {
         return TaskID;
     }
 
-    public void setTaskID(String taskID) {
+    public void setTaskID(Integer taskID) {
         TaskID = taskID;
     }
 

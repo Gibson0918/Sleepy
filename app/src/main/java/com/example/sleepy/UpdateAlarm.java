@@ -44,6 +44,7 @@ public class UpdateAlarm extends AppCompatActivity implements View.OnClickListen
     Spinner spinnerset;
     String[] spinnerobjects = { "Math" , "Diagram" };
     int [] buttonclick = new int[]{0,0,0,0,0,0,0};
+    int count;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +77,18 @@ public class UpdateAlarm extends AppCompatActivity implements View.OnClickListen
         btn_thur.setOnClickListener(this);
         btn_fri.setOnClickListener(this);
         btn_sat.setOnClickListener(this);
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference countRef = db.collection(getusermail()).document("Counter");
+        countRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot documentSnapshot = task.getResult();
+                    count = (int) documentSnapshot.get("count");
+                }
+            }
+        });
 
 
 
@@ -168,7 +181,7 @@ public class UpdateAlarm extends AppCompatActivity implements View.OnClickListen
                 }
 
                 String alarmTime = convertTime(tp.getCurrentHour()) + ":" + convertTime(tp.getCurrentMinute());
-                alarm_add data = new alarm_add(alarmID, alarmTime,user.getUid(),days,PuzzleType,txtalarmlable.getText().toString(),1);
+                alarm_add data = new alarm_add(alarmID, alarmTime,user.getUid(),days,PuzzleType,txtalarmlable.getText().toString(),1, count);
 
 
                 CollectionReference itemref = db.collection(getusermail()).document("Alarm")

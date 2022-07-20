@@ -1,6 +1,10 @@
 package com.example.sleepy;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +30,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdaptor.MyViewHolder> {
 
@@ -40,6 +45,7 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
      *
      * @param options
      */
+    
     public AlarmAdaptor(Context context , @NonNull FirestoreRecyclerOptions<alarm_add> options , ArrayList<alarm_add> alarms) {
         super(options);
         this.context = context;
@@ -72,11 +78,14 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
             holder.tg_alarmon.setChecked(false);
         }
 
-
         holder.tg_alarmon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 String alarmID = list.get(safeposition).getAlarmID();
+                String time = list.get(safeposition).getTime();
+                Integer taskID = list.get(safeposition).getTaskID();
+                String days = list.get(safeposition).getDays();
+
                 Log.e("UPDATE", alarmID);
                 FirebaseFirestore database = FirebaseFirestore.getInstance();
                 CollectionReference itemref = database.collection(getusermail()).document("Alarm")
@@ -87,10 +96,48 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if(task.isSuccessful()){
                             for(DocumentSnapshot snapshot : task.getResult()) {
+                                AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                                Intent intent = new Intent(context, AlarmReceiver.class);
+                                intent.putExtra("passing_time", time);
                                 if(isChecked){
                                     itemref.document(snapshot.getId()).update("isup", 1);
+                                    Calendar calNow = Calendar.getInstance();
+                                    String[] timespilt = time.split(":");
+
+                                    for (char c: days.toCharArray()) {
+                                        Calendar calSet = (Calendar) calNow.clone();
+
+                                        calSet.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timespilt[0].trim()));
+                                        calSet.set(Calendar.MINUTE, Integer.parseInt(timespilt[1].trim()));
+                                        calSet.set(Calendar.SECOND, 0);
+                                        calSet.set(Calendar.MILLISECOND, 0);
+                                        Log.e("day", String.valueOf(c - 47));
+                                        calSet.set(Calendar.DAY_OF_WEEK, c - 47);
+                                        if (calSet.compareTo(calNow) <= 0) {
+                                            calSet.add(Calendar.DATE, 7);
+                                        }
+
+                                        String countStr = taskID + String.valueOf(c);
+                                        int newCount1 = Integer.parseInt(countStr);
+                                        Log.e("newCountOn: ", String.valueOf(newCount1));
+                                        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, newCount1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                        alarmManager.set(AlarmManager.RTC_WAKEUP, calSet.getTimeInMillis(), pendingIntent);
+                                        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calSet.getTimeInMillis(), (DateUtils.DAY_IN_MILLIS) * 7, pendingIntent);
+                                        Log.e("turn on alarm: ",  String.valueOf(newCount1) + "ON");
+
+                                    }
+
                                 } else {
                                     itemref.document(snapshot.getId()).update("isup", 0);
+                                    for (char c : days.toCharArray()) {
+                                        String countStr = taskID + String.valueOf(c);
+                                        int newCount1 = Integer.parseInt(countStr);
+                                        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, newCount1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                        if (alarmManager != null) {
+                                            alarmManager.cancel(pendingIntent);
+                                        }
+                                        Log.e("turn off alarm: ", String.valueOf(newCount1) + "OFF");
+                                    }
                                 }
                             }
                         }
@@ -98,44 +145,6 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
                 });
             }
         });
-
-
-        /*
-
-        holder.tg_alarmon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String alarmID = list.get(safeposition).getAlarmID();
-                Log.e("UPDATE", alarmID);
-                FirebaseFirestore database = FirebaseFirestore.getInstance();
-                CollectionReference itemref = database.collection(getusermail()).document("Alarm")
-                        .collection("alarms");
-                Query update = itemref.whereEqualTo("alarmID", alarmID);
-                update.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if(task.isSuccessful()){
-                            for(DocumentSnapshot snapshot : task.getResult()){
-                                alarm_add alarms = snapshot.toObject(alarm_add.class);
-                                if (alarms.getIsup() == 1) {
-                                    itemref.document(snapshot.getId()).update("isup", 0);
-                                   // holder.tg_alarmon.setChecked(false);
-                                } else {
-                                    itemref.document(snapshot.getId()).update("isup", 1);
-                                    //holder.tg_alarmon.setChecked(true);
-                                }
-                            }
-                        } else {
-                            Log.e("UPDATE", "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
-            }
-        }); //toggle end
-
-
-         */
-
     }
 
     public alarm_add getAlarmAt(int position){
@@ -154,7 +163,6 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
     public int getItemCount() {
         return list.size();
     }
-
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
         TextView txttime;

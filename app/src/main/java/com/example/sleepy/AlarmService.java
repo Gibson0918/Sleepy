@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.IBinder;
 import android.text.format.DateUtils;
@@ -27,6 +28,11 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.Calendar;
 
 public class AlarmService extends Service {
+
+    public static final String Email = "emailKey";// creating constant keys for shared preferences.
+    public static final String SHARED_PREFS = "shared_prefs";
+    String email;
+    SharedPreferences sharedPreferences;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -37,38 +43,48 @@ public class AlarmService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.e("Service", "service started");
-        String emailAddr = intent.getStringExtra("EMAIL");
-        Query query = FirebaseFirestore.getInstance().collection(emailAddr).document("Alarm")
+        //String emailAddr = intent.getStringExtra("EMAIL");
+        //Log.e("test_email", emailAddr);
+        sharedPreferences = getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE);
+        email = sharedPreferences.getString(Email, null);
+        Query query = FirebaseFirestore.getInstance().collection(email).document("Alarm")
                 .collection("alarms").orderBy("time",Query.Direction.ASCENDING);
         query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
                     alarm_add alarm = queryDocumentSnapshot.toObject(alarm_add.class);
-                    Log.e("svcAlarm", "Setting up alarm id: " + alarm.AlarmID);
-                    String finalDays = alarm.getDays();
+                    if (alarm.isup == 1) {
+                        Log.e("svcAlarm", "Setting up alarm id: " + alarm.AlarmID);
+                        Log.e("svcAlarm count", "Setting up alarm count: " + alarm.TaskID);
+                        String finalDays = alarm.getDays();
 
-                    String[] timespilt = alarm.getTime().split(":");
+                        String[] timespilt = alarm.getTime().split(":");
 
-                    Calendar calNow = Calendar.getInstance();
-                    for (char c: finalDays.toCharArray()) {
-                        Calendar calSet = (Calendar) calNow.clone();
+                        Calendar calNow = Calendar.getInstance();
+                        for (char c: finalDays.toCharArray()) {
+                            Calendar calSet = (Calendar) calNow.clone();
 
-                        calSet.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timespilt[0].trim()));
-                        calSet.set(Calendar.MINUTE, Integer.parseInt(timespilt[1].trim()));
-                        calSet.set(Calendar.SECOND, 0);
-                        calSet.set(Calendar.MILLISECOND, 0);
-                        calSet.set(Calendar.DAY_OF_WEEK, c - 47);
-                        if (calSet.compareTo(calNow) <= 0) {
-                            calSet.add(Calendar.DATE, 7);
+                            calSet.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timespilt[0].trim()));
+                            calSet.set(Calendar.MINUTE, Integer.parseInt(timespilt[1].trim()));
+                            calSet.set(Calendar.SECOND, 0);
+                            calSet.set(Calendar.MILLISECOND, 0);
+                            calSet.set(Calendar.DAY_OF_WEEK, c - 47);
+                            if (calSet.compareTo(calNow) <= 0) {
+                                calSet.add(Calendar.DATE, 7);
+                            }
+
+                            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                            Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
+                            intent.putExtra("passing_time", alarm.getTime());
+                            Log.e("count", alarm.TaskID.toString());
+                            String countStr = alarm.TaskID + String.valueOf(c);
+                            int newCount1 = Integer.parseInt(countStr);
+                            Log.e("newCount: ", String.valueOf(newCount1));
+                            PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), newCount1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                            alarmManager.set(AlarmManager.RTC_WAKEUP, calSet.getTimeInMillis(), pendingIntent);
+                            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calSet.getTimeInMillis() + 10000, (DateUtils.DAY_IN_MILLIS) * 7, pendingIntent);
                         }
-
-                        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                        Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
-                        intent.putExtra("passing_time", alarm.getTime());
-                        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), (int) ((int) System.currentTimeMillis() + Math.random()), intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                        alarmManager.set(AlarmManager.RTC_WAKEUP, calSet.getTimeInMillis(), pendingIntent);
-                        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, (long) (calSet.getTimeInMillis() + Math.random()), (DateUtils.DAY_IN_MILLIS) * 7, pendingIntent);
                     }
                 }
             }

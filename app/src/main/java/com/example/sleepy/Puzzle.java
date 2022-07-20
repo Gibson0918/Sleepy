@@ -65,50 +65,64 @@ public class Puzzle extends AppCompatActivity {
                 txtques.setText(random_int + " + " + random_int2);
             case 2:
                 ans = random_int - random_int2;
-                txtques.setText(random_int + " - " + random_int2);
+                if (random_int > random_int2) {
+                    txtques.setText(random_int + " - " + random_int2);
+                } else {
+                    ans = random_int2 - random_int;
+                    txtques.setText(random_int2 + " - " + random_int);
+                }
                 break;
             case 3:
                 ans = random_int * random_int2;
                 txtques.setText(random_int + " x " + random_int2);
                 break;
             case 4:
-                ans = (double)random_int / random_int2;
-                txtques.setText(random_int + " / " + random_int2);
+                ans = (double) random_int / random_int2;
+                if (random_int > random_int2) {
+                    txtques.setText(random_int + " / " + random_int2);
+                } else {
+                    ans = (double) random_int2 / random_int;
+                    txtques.setText(random_int2 + " / " + random_int);
+                }
         }
 
         btndismiss.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                double input = Double.parseDouble(editans.getText().toString());
-                Calendar calNow = Calendar.getInstance();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:MM");
-               // SimpleDateFormat sdf2 = new SimpleDateFormat("HH:MM");
-                String date = sdf.format(calNow.getTime()).toString();
-               // String time = sdf2.format(calNow.getTime()).toString();
-                ans = Math.abs(ans);
-                if (input == ans) {
-                    History history = new History(date, "yes");
-                    db.collection(email).document("History").collection("history").add(history)
-                            .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                                @Override
-                                public void onSuccess(DocumentReference documentReference) {
-                                    Intent intent = new Intent(Puzzle.this, CameraActivity.class);
-                                    startActivity(intent);
-                                    finish();
-                                }
-                            });
-                } else {
+                if (!editans.getText().toString().isEmpty()) {
+                    double input = Double.parseDouble(editans.getText().toString());
+                    Calendar calNow = Calendar.getInstance();
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:MM");
+                    // SimpleDateFormat sdf2 = new SimpleDateFormat("HH:MM");
+                    String date = sdf.format(calNow.getTime()).toString();
+                    // String time = sdf2.format(calNow.getTime()).toString();
+                    ans = Math.abs(ans);
+                    if (input == ans) {
+                        History history = new History(date, "yes");
+                        db.collection(email).document("History").collection("history").add(history)
+                                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                    @Override
+                                    public void onSuccess(DocumentReference documentReference) {
+                                        Intent intent = new Intent(Puzzle.this, CameraActivity.class);
+                                        startActivity(intent);
+                                        finish();
+                                    }
+                                });
+                    } else {
 
-                    History history = new History(date , "No");
-                    db.collection(email).document("History").collection("history").add(history)
-                            .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                                @Override
-                                public void onSuccess(DocumentReference documentReference) {
-                                    Toast.makeText(Puzzle.this, "Wrong Answer.",
-                                            Toast.LENGTH_SHORT).show();
-                                    editans.getText().clear();
-                                }
-                            });
+                        History history = new History(date, "No");
+                        db.collection(email).document("History").collection("history").add(history)
+                                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                    @Override
+                                    public void onSuccess(DocumentReference documentReference) {
+                                        Toast.makeText(Puzzle.this, "Wrong Answer.",
+                                                Toast.LENGTH_SHORT).show();
+                                        editans.getText().clear();
+                                    }
+                                });
+                    }
+                } else {
+                    Toast.makeText(Puzzle.this, "Please enter an input?", Toast.LENGTH_SHORT).show();
                 }
             }
         });

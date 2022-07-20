@@ -61,7 +61,6 @@ public class AlarmFragment extends Fragment {
         recyclerView = view.findViewById(R.id.alarmlist);
         Log.e("alarmFragment", "called!");
 
-        list = new ArrayList<>();
         Query query = database.collection(getusermail()).document("Alarm")
                 .collection("alarms").orderBy("time",Query.Direction.ASCENDING);
         query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -78,7 +77,6 @@ public class AlarmFragment extends Fragment {
                 .setQuery(query, alarm_add.class)
                 .build();
         //setup recycle view
-        recyclerView = view.findViewById(R.id.alarmlist);
         myAdaptor = new AlarmAdaptor(view.getContext(), options, list);
         //myAdaptor.notifyDataSetChanged();
         recyclerView.setLayoutManager(new WrapContentLinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));

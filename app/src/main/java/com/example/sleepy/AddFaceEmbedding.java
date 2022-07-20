@@ -200,15 +200,15 @@ public class AddFaceEmbedding extends AppCompatActivity {
     private void bindDisplayItem() {
         addBtn = findViewById(R.id.addBtn);
         previewView = findViewById(R.id.previewView);
-        /*MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(AddFaceEmbedding.this);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(AddFaceEmbedding.this);
         builder.setTitle("Facial recognition!");
-        builder.setMessage("Tap on the camera button to capture your face!");
+        builder.setMessage("Ensure that room is well-lit to capture facial features!!");
         builder.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 //Do Nothing
             }
         });
-        builder.show();*/
+        builder.show();
     }
 }
