@@ -29,7 +29,6 @@ import java.util.ArrayList;
 
 public class HistoryFragment extends Fragment {
     RecyclerView recyclerView;
-    ArrayList<History> list = new ArrayList<>();
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
     FirebaseUser user = mFirebaseAuth.getCurrentUser();
@@ -39,28 +38,14 @@ public class HistoryFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_history, container, false);
-        list.clear();
         Query query = db.collection(getusermail()).document("History")
                 .collection("history");
-        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
-                    History history = queryDocumentSnapshot.toObject(History.class);
-                    list.add(history);
-                    Log.e("query", history.toString() );
-                    Log.e("list", String.valueOf(list));
-                    arrayAdapter.notifyDataSetChanged();
-                }
-            }
-        });
 
         FirestoreRecyclerOptions<History> options = new FirestoreRecyclerOptions.Builder<History>()
                 .setQuery(query, History.class)
                 .build();
         recyclerView = view.findViewById(R.id.recyclehistory);
-        arrayAdapter = new HistoryAdapter(view.getContext(), options, list);
-        Log.e("list2", String.valueOf(list));
+        arrayAdapter = new HistoryAdapter(view.getContext(), options);
         recyclerView.setLayoutManager(new WrapContentLinearLayoutManager(view.getContext(),
                 LinearLayoutManager.VERTICAL, false));
         recyclerView.setAdapter(arrayAdapter);

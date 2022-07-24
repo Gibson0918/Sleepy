@@ -83,8 +83,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     @Override
     public void onResume() {
         super.onResume();
-        getSupportFragmentManager().beginTransaction().detach(alarmFragment).commitNow();
-        getSupportFragmentManager().beginTransaction().attach(alarmFragment).commitNow();
+        //getSupportFragmentManager().beginTransaction().detach(alarmFragment).commitNow();
+        //getSupportFragmentManager().beginTransaction().attach(alarmFragment).commitNow();
     }
 
     private void createNotificationChannel() {

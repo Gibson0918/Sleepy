@@ -1,5 +1,8 @@
 package com.example.sleepy;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -14,43 +17,24 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.Toast;
 
-import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class AlarmFragment extends Fragment {
 
     RecyclerView recyclerView;
     FirebaseFirestore database = FirebaseFirestore.getInstance();
     AlarmAdaptor myAdaptor;
-    ArrayList<alarm_add> list = new ArrayList<>();
     FirebaseAuth mFirebaseAuth = FirebaseAuth.getInstance();
 
     @Override
@@ -63,35 +47,15 @@ public class AlarmFragment extends Fragment {
 
         Query query = database.collection(getusermail()).document("Alarm")
                 .collection("alarms").orderBy("time",Query.Direction.ASCENDING);
-        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
-                    alarm_add alarms = queryDocumentSnapshot.toObject(alarm_add.class);
-                    list.add(alarms);
-                    myAdaptor.notifyDataSetChanged();
-                }
-            }
-        });
+
         FirestoreRecyclerOptions<alarm_add> options = new FirestoreRecyclerOptions.Builder<alarm_add>()
                 .setQuery(query, alarm_add.class)
                 .build();
         //setup recycle view
-        myAdaptor = new AlarmAdaptor(view.getContext(), options, list);
+        myAdaptor = new AlarmAdaptor(view.getContext(), options);
         //myAdaptor.notifyDataSetChanged();
         recyclerView.setLayoutManager(new WrapContentLinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
         recyclerView.setAdapter(myAdaptor);
-
-        myAdaptor.setOnItemClickListener(new AlarmAdaptor.onItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                Intent i = new Intent(getContext(),UpdateAlarm.class);
-                i.putExtra("alarmid", list.get(position).getAlarmID());
-                Toast.makeText(getContext(), list.get(position).getAlarmID(), Toast.LENGTH_SHORT).show();
-                startActivity(i);
-            }
-        });
-
 
         buttonadd.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,33 +75,55 @@ public class AlarmFragment extends Fragment {
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 // list.remove(viewHolder.getAdapterPosition());
-                String alarmID = myAdaptor.getAlarmAt(viewHolder.getAdapterPosition()).getAlarmID();
-                Log.e("swipe recycleview", "onSwiped: REMOVED " + viewHolder.getAdapterPosition() + " id : " + alarmID );
+                String docID = myAdaptor.getSnapshots().getSnapshot(viewHolder.getAdapterPosition()).getId();
+                Log.e("swipe recycleview", "onSwiped: REMOVED " + viewHolder.getAdapterPosition() + " id : " + docID );
+                AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
+                Intent intent = new Intent(getContext(), AlarmReceiver.class);
+                database.collection(getusermail()).document("Alarm").collection("alarms").document(docID).get()
+                        .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                if (task.isSuccessful()) {
 
-                CollectionReference itemref = database.collection(getusermail()).document("Alarm")
-                        .collection("alarms");
-                Query remove = itemref.whereEqualTo("alarmID", alarmID);
-                remove.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        Log.e("DELETE", ";;; ", task.getException());
-                        if(task.isSuccessful()){
-                            for(DocumentSnapshot snapshot : task.getResult()){
-                                itemref.document(snapshot.getId()).delete();
-                                list.remove(viewHolder.getAdapterPosition());
+                                    DocumentSnapshot documentSnapshot = task.getResult();
+                                    if (documentSnapshot.exists()) {
+                                        String count = String.valueOf(documentSnapshot.getLong("taskID").intValue());
+                                        String days = documentSnapshot.get("days").toString();
+                                        Log.e("COUNT123", count);
+
+                                        for (char c : days.toCharArray()) {
+                                            String countStr = count + String.valueOf(c);
+                                            int newCount1 = Integer.parseInt(countStr);
+                                            PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), newCount1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                                            if (alarmManager != null) {
+                                                Log.e("ALARM 123", "cancelled");
+                                                alarmManager.cancel(pendingIntent);
+
+                                            }
+                                            Log.e("turn off alarm: ", String.valueOf(newCount1) + "OFF");
+                                        }
+
+                                        database.collection(getusermail()).document("Alarm").collection("alarms").document(docID).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void unused) {
+                                                Log.e("delete: ", "SUCCESS");
+                                                myAdaptor.notifyDataSetChanged();
+                                            }
+                                        }).addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Log.e("delete: ", "FAILURE");
+                                            }
+                                        });
+
+                                    } else {
+                                        Log.e("COUNT123: ", "DNE" );
+                                    }
+                                }
                             }
-                        }
-                        else {
-                            Log.e("DELETE", "Error getting documents: ", task.getException());
-                        }
-                    }
                 });
-
-                myAdaptor.notifyDataSetChanged();
             }
         }).attachToRecyclerView(recyclerView);
-
-
         return view;
     }
 
@@ -147,7 +133,6 @@ public class AlarmFragment extends Fragment {
         super.onStart();
         recyclerView.getRecycledViewPool().clear();
         myAdaptor.startListening();
-
     }
 
     @Override
@@ -155,7 +140,6 @@ public class AlarmFragment extends Fragment {
         super.onStop();
         myAdaptor.stopListening();
     }
-
 
     private String getusermail() {
         FirebaseUser user = mFirebaseAuth.getCurrentUser();

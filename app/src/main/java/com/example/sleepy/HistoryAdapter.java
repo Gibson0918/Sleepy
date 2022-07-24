@@ -20,12 +20,9 @@ import java.util.ArrayList;
 public class HistoryAdapter extends FirestoreRecyclerAdapter<History,HistoryAdapter.MyViewHolder> {
 
     Context context;
-    ArrayList<History> list;
 
-
-    public HistoryAdapter(Context context , @NonNull FirestoreRecyclerOptions<History> options , ArrayList<History> histories) {
+    public HistoryAdapter(Context context , @NonNull FirestoreRecyclerOptions<History> options) {
         super(options);
-        this.list = histories;
         this.context = context;
     }
 
@@ -37,7 +34,6 @@ public class HistoryAdapter extends FirestoreRecyclerAdapter<History,HistoryAdap
         } else {
             holder.card.setCardBackgroundColor(Color.RED);
         }
-
     }
 
     @NonNull
@@ -46,12 +42,6 @@ public class HistoryAdapter extends FirestoreRecyclerAdapter<History,HistoryAdap
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.historycard,parent,false);
         return new MyViewHolder(v);
     }
-
-    @Override
-    public int getItemCount() {
-        return list.size();
-    }
-
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
         TextView histories;

@@ -85,7 +85,7 @@ public class UpdateAlarm extends AppCompatActivity implements View.OnClickListen
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
                     DocumentSnapshot documentSnapshot = task.getResult();
-                    count = (int) documentSnapshot.get("count");
+                    count = documentSnapshot.getLong("count").intValue();
                 }
             }
         });

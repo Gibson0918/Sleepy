@@ -1,9 +1,11 @@
 package com.example.sleepy;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
@@ -24,6 +27,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -46,10 +50,9 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
      * @param options
      */
     
-    public AlarmAdaptor(Context context , @NonNull FirestoreRecyclerOptions<alarm_add> options , ArrayList<alarm_add> alarms) {
+    public AlarmAdaptor(Context context , @NonNull FirestoreRecyclerOptions<alarm_add> options ) {
         super(options);
         this.context = context;
-        this.list = alarms;
     }
 
     public interface onItemClickListener {
@@ -63,14 +66,34 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
     @Override
     public AlarmAdaptor.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.alarm,parent,false);
-        return new MyViewHolder(v, mListener);
+        return new MyViewHolder(v, mListener, context);
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull MyViewHolder holder, int position, @NonNull alarm_add model) {
+    protected void onBindViewHolder(@NonNull MyViewHolder holder, @SuppressLint("RecyclerView") int position, @NonNull alarm_add model) {
         int safeposition = holder.getLayoutPosition();
         //alarm_add alarms = list.get(safeposition);
         holder.txttime.setText(model.getTime());
+
+        String daysSelected = getItem(position).getDays();
+        Log.e("daysSelected", daysSelected);
+        for (char c : daysSelected.toCharArray()) {
+            if (c == 49) {
+                holder.mondayTxt.setTextColor(Color.GREEN);
+            } else if (c == 50) {
+                holder.tuesTxt.setTextColor(Color.GREEN);
+            } else if (c == 51) {
+                holder.wedTxt.setTextColor(Color.GREEN);
+            } else if (c == 52) {
+                holder.thurTxt.setTextColor(Color.GREEN);
+            } else if (c == 53) {
+                holder.fridayTxt.setTextColor(Color.GREEN);
+            } else if (c == 54) {
+                holder.satTxt.setTextColor(Color.GREEN);
+            } else {
+                holder.sunTxt.setTextColor(Color.GREEN);
+            }
+        }
 
         if(model.getIsup() == 1) {
             holder.tg_alarmon.setChecked(true);
@@ -78,13 +101,23 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
             holder.tg_alarmon.setChecked(false);
         }
 
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(context,UpdateAlarm.class);
+                i.putExtra("alarmid", getItem(position).getAlarmID());
+                Toast.makeText(context, getItem(position).getAlarmID(), Toast.LENGTH_SHORT).show();
+                context.startActivity(i);
+            }
+        });
+
         holder.tg_alarmon.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                String alarmID = list.get(safeposition).getAlarmID();
-                String time = list.get(safeposition).getTime();
-                Integer taskID = list.get(safeposition).getTaskID();
-                String days = list.get(safeposition).getDays();
+                String alarmID = getItem(position).getAlarmID();
+                String time = getItem(position).getTime();
+                Integer taskID = getItem(position).getTaskID();
+                String days = getItem(position).getDays();
 
                 Log.e("UPDATE", alarmID);
                 FirebaseFirestore database = FirebaseFirestore.getInstance();
@@ -147,10 +180,6 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
         });
     }
 
-    public alarm_add getAlarmAt(int position){
-        return list.get(position);
-    }
-
     private String getusermail() {
         FirebaseUser user = mFirebaseAuth.getCurrentUser();
         if(user != null) {
@@ -159,23 +188,41 @@ public class AlarmAdaptor extends FirestoreRecyclerAdapter<alarm_add,AlarmAdapto
         return "ANONYMOUS" ;
     }
 
-    @Override
-    public int getItemCount() {
-        return list.size();
-    }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
         TextView txttime;
         ToggleButton tg_alarmon;
-        public MyViewHolder(View itemview , final onItemClickListener listener) {
+        TextView mondayTxt;
+        TextView tuesTxt;
+        TextView wedTxt;
+        TextView thurTxt;
+        TextView fridayTxt;
+        TextView satTxt;
+        TextView sunTxt;
+
+        public MyViewHolder(View itemview , final onItemClickListener listener, Context context) {
             super(itemview);
             txttime = itemview.findViewById(R.id.txthistories);
             tg_alarmon = itemview.findViewById(R.id.tg_alarmon);
+            mondayTxt = itemview.findViewById(R.id.monday);
+            tuesTxt = itemview.findViewById(R.id.tuesday);
+            wedTxt = itemview.findViewById(R.id.wednesday);
+            thurTxt = itemview.findViewById(R.id.thursday);
+            fridayTxt = itemview.findViewById(R.id.friday);
+            satTxt = itemview.findViewById(R.id.saturday);
+            sunTxt = itemview.findViewById(R.id.sunday);
+            mondayTxt.setText("Mon");
+            tuesTxt.setText("Tue");
+            wedTxt.setText("Wed");
+            thurTxt.setText("Thur");
+            fridayTxt.setText("Fri");
+            satTxt.setText("Sat");
+            sunTxt.setText("Sun");
             itemview.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if(listener != null) {
-                        int position = getBindingAdapterPosition();
+                        int position = getAdapterPosition();
                         if(position != RecyclerView.NO_POSITION) {
                             long key = getItemId();
                             listener.onItemClick(position);
